@@ -7,6 +7,10 @@ import PIL
 import PIL.Image
 import sys
 import torch
+import moviepy.video.io.ffmpeg_writer as ffmpeg_writer
+from moviepy.editor import VideoFileClip
+
+
 
 import sepconv # the custom separable convolution layer
 
@@ -30,7 +34,7 @@ for strOption, strArg in getopt.getopt(sys.argv[1:], '', [
     'padding=',
     'one=',
     'two=',
-    'vidoe=',
+    'video=',
     'out=',
 ])[0]:
     if strOption == '--model' and strArg != '': args_strModel = strArg # which model to use, l1 or lf, please see our paper for more details
@@ -192,16 +196,18 @@ if __name__ == '__main__':
         PIL.Image.fromarray((tenOutput.clip(0.0, 1.0).numpy(force=True).transpose(1, 2, 0)[:, :, ::-1] * 255.0).astype(numpy.uint8)).save(args_strOut)
 
     elif args_strOut.split('.')[-1] in ['avi', 'mp4', 'webm', 'wmv']:
-        import moviepy
+        # import moviepy
+        # import moviepy.video.io.ffmpeg_writer as ffmpeg_writer
 
-        objVideoreader = moviepy.VideoFileClip(filename=args_strVideo)
+
+        objVideoreader =VideoFileClip(filename=args_strVideo)
 
         intWidth = objVideoreader.w
         intHeight = objVideoreader.h
 
         tenFrames = [None, None, None, None, None]
 
-        with moviepy.video.io.ffmpeg_writer.FFMPEG_VideoWriter(filename=args_strOut, size=(intWidth, intHeight), fps=objVideoreader.fps) as objVideowriter:
+        with ffmpeg_writer.FFMPEG_VideoWriter(filename=args_strOut, size=(intWidth, intHeight), fps=objVideoreader.fps) as objVideowriter:
             for npyFrame in objVideoreader.iter_frames():
                 tenFrames[4] = torch.FloatTensor(numpy.ascontiguousarray(npyFrame[:, :, ::-1].transpose(2, 0, 1).astype(numpy.float32) * (1.0 / 255.0)))
 
