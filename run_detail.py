@@ -94,7 +94,7 @@ class Network(torch.nn.Module):
 
         # Chargement des poids du modèle pré-entraîné
         # Utilise args_strModel qui sera défini par argparse
-        self.load_state_dict({ strKey.replace('module', 'net'): tenWeight for strKey, tenWeight in torch.hub.load_state_dict_from_url(url='[http://content.sniklaus.com/sepconv/network-](http://content.sniklaus.com/sepconv/network-)' + args_strModel + '.pytorch', file_name='sepconv-' + args_strModel).items() })
+        self.load_state_dict({ strKey.replace('module', 'net'): tenWeight for strKey, tenWeight in torch.hub.load_state_dict_from_url(url='http://content.sniklaus.com/sepconv/network-' + args_strModel + '.pytorch', file_name='sepconv-' + args_strModel).items() })
     # end
 
     # Méthode forward pour le passage avant du réseau
@@ -224,7 +224,7 @@ def get_sepconv_interpolations_recursive(frame_a_torch, frame_b_torch, current_l
     # Estimer la frame du milieu (première interpolation à ce niveau)
     interp_mid_torch = estimate(frame_a_torch, frame_b_torch)
     
-    # Appels récursifs pour les moitiés gauche et droite de l'intervalle
+    # Appels récursifs pour les moitiées gauche et droite de l'intervalle
     left_interps = get_sepconv_interpolations_recursive(frame_a_torch, interp_mid_torch, current_level + 1, max_level)
     right_interps = get_sepconv_interpolations_recursive(interp_mid_torch, frame_b_torch, current_level + 1, max_level)
     
@@ -263,7 +263,7 @@ if __name__ == '__main__':
     if args.out.split('.')[-1] in ['avi', 'mp4', 'webm', 'wmv']:
         objVideoreader = VideoFileClip(filename=args.video)
 
-        intWidth = objVideorere.w
+        intWidth = objVideoreader.w # Correction ici de objVideorere.w en objVideoreader.w
         intHeight = objVideoreader.h
         original_fps = objVideoreader.fps
 
@@ -277,8 +277,9 @@ if __name__ == '__main__':
             sys.exit(1)
 
         # Initialisation de l'enregistreur vidéo pour la sortie ralentie
-        output_fps = original_fps * args.sf
-        print(f"Initialisation de l'enregistreur vidéo pour '{args.out}' à {output_fps} FPS...")
+        # *** CORRECTION MAJEURE ICI : Définir le FPS de sortie au FPS original pour un VRAI ralenti ***
+        output_fps = original_fps 
+        print(f"Initialisation de l'enregistreur vidéo pour '{args.out}' à {output_fps} FPS (pour un ralenti {args.sf}x) ...")
         objVideowriter = ffmpeg_writer.FFMPEG_VideoWriter(filename=args.out, size=(intWidth, intHeight), fps=output_fps)
 
         # Initialisation des listes pour les métriques
